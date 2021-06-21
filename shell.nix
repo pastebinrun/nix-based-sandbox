@@ -29,9 +29,7 @@ mkShell {
     python
     
     # Rust
-    cargo
-    clippy
-    rustfmt
+    rustChannels.stable.rust
   ];
   JAVA8 = openjdk8;
   JAVA11 = openjdk11;
