@@ -45,6 +45,7 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     let mut child = Command::new("/run/wrappers/bin/firejail")
         .arg(private)
         .args(&[
+            "--blacklist=/var",
             "--caps.drop=all",
             "--net=none",
             "--no3d",
