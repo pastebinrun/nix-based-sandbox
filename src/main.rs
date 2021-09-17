@@ -45,7 +45,7 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     let mut child = Command::new("bwrap")
         .arg("--ro-bind")
         .arg(home.path())
-        .args([
+        .args(&[
             "/home/sandbox",
             "--ro-bind",
             "/nix/store",
