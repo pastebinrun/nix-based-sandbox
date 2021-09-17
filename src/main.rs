@@ -43,7 +43,7 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     let mut private = OsString::from("--private=");
     private.push(home.path());
     let mut child = Command::new("bwrap")
-        .arg("--ro-bind")
+        .arg("--bind")
         .arg(home.path())
         .args(&[
             "/home/sandbox",
