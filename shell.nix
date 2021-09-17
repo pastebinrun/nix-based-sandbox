@@ -5,6 +5,8 @@ in
 with pkgs;
 mkShell {
   packages = [
+    bubblewrap
+
     dotnet-sdk_5
     ghc
     perl

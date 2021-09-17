@@ -42,33 +42,23 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     }
     let mut private = OsString::from("--private=");
     private.push(home.path());
-    let mut child = Command::new("/run/wrappers/bin/firejail")
-        .arg(private)
-        .args(&[
-            "--blacklist=/var",
-            "--caps.drop=all",
-            "--net=none",
-            "--no3d",
-            "--nodbus",
-            "--nodvd",
-            "--nogroups",
-            "--nonewprivs",
-            "--noprofile",
-            "--noroot",
-            "--nosound",
-            "--noautopulse",
-            "--novideo",
-            "--nou2f",
-            "--private-dev",
-            "--private-tmp",
-            "--rlimit-cpu=10",
-            "--rlimit-fsize=10000000",
-            "--rlimit-nofile=192",
-            "--rlimit-nproc=2048",
-            "--seccomp",
-            "--shell=none",
-            "--x11=none",
-            "--quiet",
+    let mut child = Command::new("bwrap")
+        .arg("--ro-bind")
+        .arg(home.path())
+        .args([
+            "/home/sandbox",
+            "--ro-bind",
+            "/nix/store",
+            "/nix/store",
+            "--proc",
+            "/proc",
+            "--dev-bind",
+            "/dev",
+            "/dev",
+            "--unshare-all",
+            "--die-with-parent",
+            "--chdir",
+            "/home/sandbox",
             "sh",
             "-c",
             &input.code,
@@ -83,7 +73,7 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     let stderr = child.stderr.take().expect("stderr");
     let mut stdout_out = Vec::new();
     let mut stderr_out = Vec::new();
-    let result = timeout(Duration::from_secs(20), async {
+    let result = timeout(Duration::from_secs(10), async {
         let ((), (), (), status) = try_join!(
             stdin.write_all(input.stdin.as_bytes()),
             read_limited(stdout, &mut stdout_out),
