@@ -46,7 +46,7 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
         .arg("--bind")
         .arg(home.path())
         .args(&[
-            "/home/sandbox",
+            "/run/sandbox",
             "--ro-bind",
             "/nix/store",
             "/nix/store",
@@ -60,7 +60,7 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
             "--unshare-all",
             "--die-with-parent",
             "--chdir",
-            "/home/sandbox",
+            "/run/sandbox",
             "sh",
             "-c",
             &input.code,
