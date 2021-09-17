@@ -55,6 +55,8 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
             "--dev-bind",
             "/dev",
             "/dev",
+            "--tmpfs",
+            "/tmp",
             "--unshare-all",
             "--die-with-parent",
             "--chdir",
