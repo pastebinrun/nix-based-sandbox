@@ -5,7 +5,7 @@ authors = ["Konrad Borowski <konrad@borowski.pw>"]
 edition = "2018"
 
 [dependencies]
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
+rocket = { version = "=0.5.0-rc.1", features = ["json"] }
 serde = { version = "1.0.126", features = ["derive"] }
 tempfile = "3.2.0"
 tokio = { version = "1.7.1", features = ["fs", "io-util", "macros", "process", "time"] }
