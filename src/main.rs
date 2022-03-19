@@ -1,6 +1,7 @@
 use rocket::serde::json::Json;
 use rocket::{launch, post, routes};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::ffi::OsString;
 use std::io;
 use std::process::Stdio;
@@ -11,14 +12,13 @@ use tokio::{fs, try_join};
 
 #[derive(Deserialize)]
 struct Input {
-    files: Vec<File>,
+    files: HashMap<String, File>,
     stdin: String,
     code: String,
 }
 
 #[derive(Deserialize)]
 struct File {
-    name: String,
     contents: String,
 }
 
@@ -37,8 +37,18 @@ async fn read_limited(f: impl AsyncReadExt + Unpin, out: &mut Vec<u8>) -> io::Re
 #[post("/", data = "<input>")]
 async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     let home = tempfile::tempdir()?;
-    for File { name, contents } in &input.files {
-        fs::write(home.path().join(name), contents).await?;
+    for (name, File { contents }) in &input.files {
+        if !name.is_empty()
+            && !name.starts_with('.')
+            && name.chars().all(|c| c.is_ascii_alphabetic() || c == '.')
+        {
+            fs::write(home.path().join(name), contents).await?;
+        } else {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Filenames can only contain ASCII alphanumeric characters and dots",
+            ));
+        }
     }
     let mut private = OsString::from("--private=");
     private.push(home.path());
