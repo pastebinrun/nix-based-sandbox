@@ -2,7 +2,7 @@
 name = "sandbox"
 version = "0.1.0"
 authors = ["Konrad Borowski <konrad@borowski.pw>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 rocket = { version = "=0.5.0-rc.1", features = ["json"] }
