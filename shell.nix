@@ -20,7 +20,7 @@ mkShell {
 
     # Go
     go
-    goimports
+    gotools
 
     # Node.js
     nodejs
