@@ -216,4 +216,15 @@ mod test {
     fn test_files() {
         run_test(&[("a", "b"), ("c", "d")], "", "cat *", Some(0), "bd");
     }
+
+    #[test]
+    fn test_php() {
+        run_test(
+            &[],
+            "",
+            r#"php -r 'echo "Hello, world!";'"#,
+            Some(0),
+            "Hello, world!",
+        );
+    }
 }
