@@ -11,6 +11,7 @@ use tokio::time::{timeout, Duration};
 use tokio::{fs, try_join};
 
 #[derive(Deserialize)]
+#[cfg_attr(test, derive(Serialize))]
 struct Input {
     files: HashMap<String, File>,
     stdin: String,
@@ -18,11 +19,13 @@ struct Input {
 }
 
 #[derive(Deserialize)]
+#[cfg_attr(test, derive(Serialize))]
 struct File {
     contents: String,
 }
 
 #[derive(Serialize)]
+#[cfg_attr(test, derive(Debug, Deserialize, Eq, PartialEq))]
 struct Output {
     status: Option<i32>,
     output: String,
@@ -70,7 +73,7 @@ async fn read_into_output(
             else => break,
         }
     }
-    return Ok(());
+    Ok(())
 }
 
 #[post("/", data = "<input>")]
@@ -125,7 +128,10 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
     let mut output = Vec::new();
     let result = timeout(Duration::from_secs(10), async {
         let ((), (), status) = try_join!(
-            stdin.write_all(input.stdin.as_bytes()),
+            async move {
+                stdin.write_all(input.stdin.as_bytes()).await?;
+                stdin.shutdown().await
+            },
             read_into_output(stdout, stderr, &mut output),
             child.wait(),
         )?;
@@ -145,4 +151,64 @@ async fn sandbox(input: Json<Input>) -> io::Result<Json<Output>> {
 #[launch]
 fn rocket() -> _ {
     rocket::build().mount("/", routes![sandbox])
+}
+
+#[cfg(test)]
+mod test {
+    use super::{rocket, File, Input, Output};
+    use rocket::http::{ContentType, Status};
+    use rocket::local::blocking::Client;
+    use rocket::uri;
+
+    fn run_test(
+        files: &[(&str, &str)],
+        stdin: &str,
+        code: &str,
+        status: Option<i32>,
+        output: &str,
+    ) {
+        let client = Client::untracked(rocket()).unwrap();
+        let response = client
+            .post(uri!(super::sandbox))
+            .json(&Input {
+                files: files
+                    .iter()
+                    .map(|&(name, contents)| {
+                        (
+                            name.into(),
+                            File {
+                                contents: contents.into(),
+                            },
+                        )
+                    })
+                    .collect(),
+                stdin: stdin.into(),
+                code: code.into(),
+            })
+            .dispatch();
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.content_type(), Some(ContentType::JSON));
+        assert_eq!(
+            response.into_json(),
+            Some(Output {
+                status,
+                output: output.into(),
+            }),
+        );
+    }
+
+    #[test]
+    fn test_status() {
+        run_test(&[], "", "false", Some(1), "");
+    }
+
+    #[test]
+    fn test_output() {
+        run_test(&[], "", "echo abc", Some(0), "abc\n");
+    }
+
+    #[test]
+    fn test_stdin() {
+        run_test(&[], "abc", "cat", Some(0), "abc");
+    }
 }
