@@ -6,6 +6,6 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "=0.5.0-rc.3", features = ["json"] }
-serde = { version = "1.0.167", features = ["derive"] }
+serde = { version = "1.0.171", features = ["derive"] }
 tempfile = "3.6.0"
 tokio = { version = "1.29.1", features = ["fs", "io-util", "macros", "process", "time"] }
