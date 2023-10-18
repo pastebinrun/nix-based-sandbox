@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: nix-based-sandbox
+Upstream-Contact: Konrad Borowski <konrad@borowski.pw>
+Source: https://codeberg.org/xfix/nix-based-sandbox
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
